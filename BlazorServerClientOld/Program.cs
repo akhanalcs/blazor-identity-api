@@ -1,3 +1,4 @@
+using BlazorServerClient;
 using BlazorServerClient.Components;
 using BlazorServerClient.Data;
 
@@ -8,6 +9,12 @@ builder.Services.AddRazorComponents()
     .AddServerComponents();
 
 // Stuff that I added 👇
+// Configure the HttpClient for the identity service
+var identityApiUrl = builder.Configuration["IdentityWebAPI:BaseUrl"]!;
+builder.Services.AddHttpClient<IdentityClient>(client =>
+{
+    client.BaseAddress = new Uri(identityApiUrl);
+});
 // Configure the HttpClient for the forecast service
 var protectedApiUrl = builder.Configuration["ProtectedWebAPI:BaseUrl"]!;
 builder.Services.AddHttpClient<WeatherForecastService>(client =>

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtectedWebAPI", "Protecte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityWebAPI", "IdentityWebAPI\IdentityWebAPI.csproj", "{39824BD5-C0C2-4215-983E-FF46F6617DBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClient", "BlazorServerClient\BlazorServerClient.csproj", "{C380CC1F-820C-4293-9CC8-17AF8C35F922}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClientOld", "BlazorServerClientOld\BlazorServerClientOld.csproj", "{C380CC1F-820C-4293-9CC8-17AF8C35F922}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
