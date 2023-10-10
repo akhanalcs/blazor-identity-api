@@ -1,14 +1,16 @@
-﻿@page "/fetchdata"
+﻿@page "/weather"
+@attribute [StreamRendering(true)]
+
 @using BlazorServerClient.Data
 @inject WeatherForecastService ForecastService
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Weather</PageTitle>
 
-<h1>Weather forecast</h1>
+<h1>Weather</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
+<p>This component demonstrates showing data from the server.</p>
 
-@if (forecasts == null)
+@if (_forecasts == null)
 {
     <p>
         <em>Loading...</em>
@@ -26,7 +28,7 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (var forecast in forecasts)
+        @foreach (var forecast in _forecasts)
         {
             <tr>
                 <td>@forecast.Date.ToShortDateString()</td>
@@ -40,10 +42,10 @@ else
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private WeatherForecast[]? _forecasts;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = (await ForecastService.GetForecastAnotherWayAsync())?.ToArray();
+        _forecasts = (await ForecastService.GetForecastAnotherWayAsync())?.ToArray();
     }
 }

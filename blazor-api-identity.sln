@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClient", "BlazorServerClient\BlazorServerClient.csproj", "{661B05F6-D432-4A54-972F-84405BBA9EB3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtectedWebAPI", "ProtectedWebAPI\ProtectedWebAPI.csproj", "{2770D588-A64B-41D3-8782-ACB289EB24FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityWebAPI", "IdentityWebAPI\IdentityWebAPI.csproj", "{39824BD5-C0C2-4215-983E-FF46F6617DBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClient", "BlazorServerClient\BlazorServerClient.csproj", "{C380CC1F-820C-4293-9CC8-17AF8C35F922}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +18,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{661B05F6-D432-4A54-972F-84405BBA9EB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{661B05F6-D432-4A54-972F-84405BBA9EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{661B05F6-D432-4A54-972F-84405BBA9EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{661B05F6-D432-4A54-972F-84405BBA9EB3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2770D588-A64B-41D3-8782-ACB289EB24FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2770D588-A64B-41D3-8782-ACB289EB24FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2770D588-A64B-41D3-8782-ACB289EB24FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -30,5 +26,9 @@ Global
 		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
