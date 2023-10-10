@@ -1,4 +1,6 @@
-namespace BlazorServerClientOld.Data;
+using BlazorServerClient.Data;
+
+namespace BlazorServerClient.Services;
 
 public class WeatherForecastService
 {

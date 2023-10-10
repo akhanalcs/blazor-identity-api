@@ -101,8 +101,8 @@
                 return;
             }
 
-    // We should only reach this page via the login callback, so redirect back to
-    // the login page if we get here some other way.
+            // We should only reach this page via the login callback, so redirect back to
+            // the login page if we get here some other way.
             RedirectManager.RedirectTo("/Account/Login");
             return;
         }
@@ -110,7 +110,7 @@
 
     private async Task OnLoginCallbackAsync()
     {
-    // Sign in the user with this external login provider if the user already has a login.
+        // Sign in the user with this external login provider if the user already has a login.
         var result = await SignInManager.ExternalLoginSignInAsync(
             _externalLoginInfo.LoginProvider,
             _externalLoginInfo.ProviderKey,

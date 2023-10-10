@@ -1,6 +1,6 @@
 namespace BlazorServerClientOld;
 
-public class IdentityClient(HttpClient httpClient, IConfiguration configuration)
+public class IdentityEndpointService(HttpClient httpClient, IConfiguration configuration)
 {
     public async Task<bool> LoginAsync(string? username, string? password)
     {

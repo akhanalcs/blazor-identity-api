@@ -1,4 +1,4 @@
-namespace BlazorServerClientOld.Data;
+namespace BlazorServerClient.Data;
 
 public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {

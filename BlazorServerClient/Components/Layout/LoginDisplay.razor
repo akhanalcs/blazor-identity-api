@@ -1,8 +1,4 @@
-﻿@using Microsoft.Extensions.Options
-
-@inject IOptionsMonitor<MicrosoftIdentityOptions> MicrosoftIdentityOptions
-
-<AuthorizeView>
+﻿<AuthorizeView>
     <Authorized>
         @if (_canEditProfile)
         {
@@ -24,7 +20,7 @@
 
     protected override void OnInitialized()
     {
-        var options = MicrosoftIdentityOptions.CurrentValue;
-        _canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
+        //_canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
+        _canEditProfile = true;
     }
 }
