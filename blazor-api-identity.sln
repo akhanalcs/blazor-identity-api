@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityWebAPI", "IdentityW
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClientOld", "BlazorServerClientOld\BlazorServerClientOld.csproj", "{C380CC1F-820C-4293-9CC8-17AF8C35F922}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClient", "BlazorServerClient\BlazorServerClient.csproj", "{21A1784C-FF9D-4F43-A12D-584C68E121CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C380CC1F-820C-4293-9CC8-17AF8C35F922}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

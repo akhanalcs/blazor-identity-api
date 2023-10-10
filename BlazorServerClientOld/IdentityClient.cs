@@ -1,4 +1,4 @@
-namespace BlazorServerClient;
+namespace BlazorServerClientOld;
 
 public class IdentityClient(HttpClient httpClient, IConfiguration configuration)
 {

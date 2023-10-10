@@ -50,7 +50,6 @@
         _alertMessage = null;
         if (await IdentityClient.LoginAsync(Username, Password))
         {
-            await OnLoggedIn.InvokeAsync(Username);
         }
         else
         {

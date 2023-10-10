@@ -1,5 +1,7 @@
 @page "/register"
 
+@inject IdentityClient IdentityClient
+
 <h3>Login</h3>
 
 <EditForm Model="@this" class="form-horizontal py-5" OnValidSubmit="@Create">
@@ -41,9 +43,8 @@
     async Task Create()
     {
         alertMessage = null;
-        if (await Client.CreateUserAsync(Username, Password))
+        if (await IdentityClient.CreateNewUserAsync(Username, Password))
         {
-            await OnLoggedIn.InvokeAsync(Username);
         }
         else
         {

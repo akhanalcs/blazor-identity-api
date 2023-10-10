@@ -1,12 +1,11 @@
-using BlazorServerClient;
-using BlazorServerClient.Components;
-using BlazorServerClient.Data;
+using BlazorServerClientOld.Components;
+using BlazorServerClientOld;
+using BlazorServerClientOld.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddServerComponents();
+builder.Services.AddRazorComponents();
 
 // Stuff that I added 👇
 // Configure the HttpClient for the identity service
@@ -37,7 +36,6 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.MapRazorComponents<App>()
-    .AddServerRenderMode();
+app.MapRazorComponents<App>();
 
 app.Run();
