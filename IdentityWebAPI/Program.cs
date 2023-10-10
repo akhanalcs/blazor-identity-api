@@ -1,4 +1,4 @@
-using IdentityWebAPI;
+using IdentityWebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// 👇 Add the authorization services
+builder.Services.AddAuthorization(); // 👈 Add this
 
 // Add Db
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -28,6 +31,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthorization(); // 👈 Add Authorization middleware
 
 var summaries = new[]
 {
@@ -47,7 +51,10 @@ app.MapGet("/weatherforecast", () =>
         return forecast;
     })
     .WithName("GetWeatherForecast")
+    .RequireAuthorization() // 👈 Add this
     .WithOpenApi();
+
+app.MapGroup("/identity").MapIdentityApi<AppUser>();
 
 app.Run();
 

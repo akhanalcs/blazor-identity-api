@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace IdentityWebAPI;
+namespace IdentityWebAPI.Data;
 
 public class AppDbContext : IdentityDbContext<AppUser>
 {

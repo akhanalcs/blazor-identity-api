@@ -1,6 +1,39 @@
-@IdentityWebAPI_HostAddress = http://localhost:5004
-
-GET {{IdentityWebAPI_HostAddress}}/weatherforecast/
+### Call Protected endpoint
+GET https://localhost:7256/weatherforecast/
 Accept: application/json
 
-###
+### Create a new user
+POST https://localhost:7256/identity/register
+Content-Type: application/json
+
+{
+  "username": "ashish@example.com",
+  "password": "SuperSecret1!",
+  "email": "ashish@example.com"
+}
+
+### Login and retrieve tokens
+POST https://localhost:7256/identity/login
+Content-Type: application/json
+
+{
+  "email": "ashish@example.com",
+  "password": "SuperSecret1!"
+}
+
+> {%
+    client.global.set("access_token", response.body.access_token);
+    client.global.set("refresh_token", response.body.refresh_token);
+%}
+
+### Call Forecast API with bearer token
+GET https://localhost:7256/weatherforecast/
+Authorization: Bearer CfDJ8L8UGyfUjDBErg6qYS34nXA7pgWQfTJH9RaUYAPr8THeC6F5F0gc0hdRlf0nDxkODars6aTrEnksTAH11TalrYG02lzX_1Ay4Fv1KnqmyBGrgD2o83ZinCSarYmLbEs614G0ZJWChYuCLs-k1q1vaOofgUIPoz-znjoPa3T_7YfHatDHQfEMESQ6lZSWmwQeA9TTreU14pwoJAP037zW6tOgW5TJhhSDe3bMM0tSfPexEIiVH4VKFOFDJds3UQn8LxZcQWs-borfhKkwq-o_ije3cXLG6SiXSazURJ6ZpJC70pi-dkYXmVNdK80AFXt7P5_K1reGTr7Bekz55jhV33ctL4nhOmcpM2S8sJgLU91_5TrXBm9onmKybbErGE5ZVHBia8bBKmVVjnKdYKmxUbKWUWzW0-ivP_xh-kxRgS1FyQzNeRy_U0IxisUX0qJ8QhP_2XQMvxek6hmwwHNIfBS6RRz-izKcP47_7Qknj6AvJWY92gdqFhv809V1XycUmx3kF11XN2fv6E20Msw6JqxqBEIkjNqYVVPmoB77ir1VZ8EvKoWTCbsBb1DPsImuke3YOix_v9tQZrT7Tes-hxltW_IJBl7a1OmeGL_rrepVfxv5FxchYcEvOl4YhClmOmRU8lJrwWKOrbZvOBWPrS32n9IXE8cBV4r4fnmBDZ4iOhojItyW4_fMp-OHHoTYJpRnSTCrsR6CWuj27dQDD-g
+
+### Fetch a new access token
+POST https://localhost:7256/identity/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "CfDJ8L8UGyfUjDBErg6qYS34nXB74m-wDvmGBfMlimhWOPIzX3CsyDinhHiGQ-oBTV8VjXgtOTLqbhGipM-8N0S_C_7MHHmBqsMT0Alti2WZITeVhysW6XZ4tt-nBb3aMdjjZ74K_Nk7yV9B_bBdxcHz6ca70CGVdLs0rTVwn1vjHI9SVUdAqElpLcu-lYG-_q4iKSjVgSe8Z_0e-u6eR5kZwflaAi-46hjNac95KKSqaZ6-qdlY7O5lqXz9QcaEu0vGTdf6vjnf7MV3_ThkboNm3ttLd9-TV1DdkRPWsnWh92nylVPM_ekVE6oj54TjdYAx5q-uhH68JSmWhoq-UfoRkYEXOewXTl8mOKqcLw1kSufx0tqP3j-eILxFKdYIyY4VvmL9L9LIcqGwqnYh_nfgfG6DLfDSYxx-ZJU6wJOLweoiAwr4aBe4mD-eZ7F5T1dHKFkYekJtHS0AzGusjDx2f4zoyehYVvxLedjAlJweMHm6reyMW9kE8UFIBCGvg8oOpSdu7ilVwk2b7cfJt115oBQk2JmGWPdsTFRw93CfJmtGybVsraSqHBdMw45CvCrPLB35Vii58qzhbTgoZMTOsyfXqLmYcGlEbq47TaRnUayHqHQmTFNPi8v1xF_ar0GW7nGGMoYqRnJtybN8DrVxERDnlBobzdnz1JlMLon00uHRnlJ1YycoV90dcq5QZIsteVjYlRAQ6x0Uc_yh5xx_9qs"
+}
