@@ -3,8 +3,8 @@
 <AuthorizeView>
     <Authorized>
         <a href="/Account/Manage">Hello, @context.User.Identity?.Name!</a>
-        <LogoutForm id="logout-form2"/>
-        <a href="#" onclick="document.getElementById('logout-form2').submit(); return false;">Log out</a>
+        @*<LogoutForm id="logout-form2"/>
+        <a href="#" onclick="document.getElementById('logout-form2').submit(); return false;">Log out</a>*@
     </Authorized>
     <NotAuthorized>
         <a href="/Account/Login">Log in</a>

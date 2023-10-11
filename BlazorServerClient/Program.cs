@@ -21,7 +21,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
 
-//builder.Services.AddAntiforgery();
+// 👇 Stuff I added
+builder.Services.AddAntiforgery();
+// 👆 Stuff I added
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -40,7 +42,7 @@ builder.Services.AddSingleton<IEmailSender, NoOpEmailSender>();
 // 👇 Stuff I added
 builder.Services.AddSingleton<WeatherForecastService>();
 
-// Configure the HttpClient for the forecast service
+// Configure the HttpClient for the forecast service (ProtectedWebAPI)
 var protectedApiUrl = builder.Configuration["ProtectedWebAPI:BaseUrl"]!;
 var protectedApiKey = builder.Configuration["ProtectedWebAPI:ApiKey"]!;
 builder.Services.AddHttpClient<WeatherForecastService>(client =>
@@ -64,8 +66,10 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
+// 👇 Stuff I added
 app.UseAuthentication();
 app.UseAuthorization();
+// 👆 Stuff I added
 
 app.UseAntiforgery();
 
