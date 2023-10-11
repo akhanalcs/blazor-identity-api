@@ -1,4 +1,4 @@
-namespace ProtectedWebAPI.Authentication;
+namespace ProtectedWebAPI.ApiKeyFilter;
 
 public static class AuthConstants
 {

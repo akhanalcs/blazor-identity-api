@@ -1,4 +1,4 @@
-namespace ProtectedWebAPI.Authentication;
+namespace ProtectedWebAPI.ApiKeyFilter;
 
 public class ApiKeyEndpointFilter(IConfiguration configuration) : IEndpointFilter
 {

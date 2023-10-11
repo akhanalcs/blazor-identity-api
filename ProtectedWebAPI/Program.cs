@@ -1,15 +1,29 @@
 using Microsoft.OpenApi.Models;
-using ProtectedWebAPI.Authentication;
+using ProtectedWebAPI.ApiKeyAuthN;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Stuff I added 👇
+// Add API Key Authentication
+// Reference: https://stackoverflow.com/a/75059938/8644294
+builder.Services
+    .AddAuthentication("ApiKeyAuth") // Specifying default AuthN scheme here
+    .AddScheme<ApiKeyAuthNSchemeOptions, ApiKeyAuthNSchemeHandler>(
+        "ApiKeyAuth",
+        opts =>
+            opts.ApiKey = builder.Configuration.GetValue<string>("Authentication:ApiKey")!
+    );
+
 builder.Services.AddAuthorization();
+// Stuff I added 👆
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Stuff I added 👇
     options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
     {
         Description = "The API Key to access the API",
@@ -35,6 +49,7 @@ builder.Services.AddSwaggerGen(options =>
     };
     
     options.AddSecurityRequirement(requirement);
+    // Stuff I added 👆
 });
 
 var app = builder.Build();
@@ -48,7 +63,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Stuff I added 👇
 app.UseAuthorization();
+// Stuff I added 👆
 
 app.MapGet("/weather", () =>
 {
@@ -59,7 +76,11 @@ app.MapGet("/weather", () =>
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]))
         .ToArray();
-}).AddEndpointFilter<ApiKeyEndpointFilter>();
+})
+// Stuff I added 👇
+.RequireAuthorization();
+//.AddEndpointFilter<ApiKeyEndpointFilter>();
+// Stuff I added 👆
 
 app.Run();
 

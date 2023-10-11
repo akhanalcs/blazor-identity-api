@@ -1,4 +1,4 @@
-namespace ProtectedWebAPI.Authentication;
+namespace ProtectedWebAPI.ApiKeyFilter;
 
 public sealed class UnauthorizedHttpObjectResult(object body) : IResult, IStatusCodeHttpResult
 {
