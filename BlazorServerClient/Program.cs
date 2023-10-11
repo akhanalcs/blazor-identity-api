@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(); // 👈 Changed in .NET 8
 
-builder.Services.AddCascadingAuthenticationState(); // 👈 This is nice in .NET 8
+builder.Services.AddCascadingAuthenticationState(); // 👈 This is nice in .NET 8. No need to wrap routes with <CascadingAuthState>
 builder.Services.AddScoped<UserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
@@ -25,6 +25,7 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -41,9 +42,11 @@ builder.Services.AddSingleton<WeatherForecastService>();
 
 // Configure the HttpClient for the forecast service
 var protectedApiUrl = builder.Configuration["ProtectedWebAPI:BaseUrl"]!;
+var protectedApiKey = builder.Configuration["ProtectedWebAPI:ApiKey"]!;
 builder.Services.AddHttpClient<WeatherForecastService>(client =>
 {
     client.BaseAddress = new Uri(protectedApiUrl);
+    client.DefaultRequestHeaders.Add("X-API-KEY", protectedApiKey); // This guy will add ApiKey to the requests
 });
 // 👆 Stuff I added
 
@@ -61,8 +64,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseAuthentication(); // 👈 Added this to fix anti-forgery error but didn't work.
-//app.UseAuthorization(); // 👈 Added this to fix anti-forgery error but didn't work.
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 

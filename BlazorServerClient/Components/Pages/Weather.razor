@@ -1,13 +1,15 @@
 ﻿@page "/weather"
 @attribute [StreamRendering(true)]
+@attribute [Authorize]
 
 @inject WeatherForecastService ForecastService
 
 <PageTitle>Weather</PageTitle>
 
-<h1>Weather</h1>
+<h1>Weather data</h1>
+<h4>You are authenticated so you're able to view weather data.</h4>
 
-<p>This component demonstrates showing data.</p>
+<p>This component demonstrates fetching data from a Protected API using API Key Authentication.</p>
 
 @if (forecasts == null)
 {
@@ -45,9 +47,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        await Task.Delay(500);
-
         forecasts = (await ForecastService.GetForecastAnotherWayAsync())?.ToArray();
     }
 }

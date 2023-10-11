@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtectedWebAPI", "ProtectedWebAPI\ProtectedWebAPI.csproj", "{2770D588-A64B-41D3-8782-ACB289EB24FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityWebAPI", "IdentityWebAPI\IdentityWebAPI.csproj", "{39824BD5-C0C2-4215-983E-FF46F6617DBA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerClient", "BlazorServerClient\BlazorServerClient.csproj", "{21A1784C-FF9D-4F43-A12D-584C68E121CA}"
 EndProject
 Global
@@ -22,10 +20,6 @@ Global
 		{2770D588-A64B-41D3-8782-ACB289EB24FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2770D588-A64B-41D3-8782-ACB289EB24FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2770D588-A64B-41D3-8782-ACB289EB24FD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{39824BD5-C0C2-4215-983E-FF46F6617DBA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21A1784C-FF9D-4F43-A12D-584C68E121CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
