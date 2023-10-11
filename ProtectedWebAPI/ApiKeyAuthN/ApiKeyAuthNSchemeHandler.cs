@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using System.Security.Principal;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
@@ -14,23 +14,28 @@ public class ApiKeyAuthNSchemeHandler : AuthenticationHandler<ApiKeyAuthNSchemeO
     {
     }
 
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var apiKey = Context.Request.Headers["X-API-KEY"];
         if (string.IsNullOrEmpty(apiKey))
         {
-            return Task.FromResult(AuthenticateResult.Fail("X-API-KEY is missing."));
+            return AuthenticateResult.Fail("X-API-KEY is missing.");
         }
         
         if (!apiKey.Equals(Options.ApiKey))
         {
-            return Task.FromResult(AuthenticateResult.Fail("Invalid X-API-KEY"));
+            return AuthenticateResult.Fail("Invalid X-API-KEY");
         }
         
-        var claims = new[] { new Claim(ClaimTypes.Name, "API USER") };
-        var identity = new ClaimsIdentity(claims, Scheme.Name);
-        var principal = new ClaimsPrincipal(identity);
-        var ticket = new AuthenticationTicket(principal, Scheme.Name);
-        return Task.FromResult(AuthenticateResult.Success(ticket));
+        // var claims = new[] { new Claim(ClaimTypes.Name, "APIUser") };
+        // var identity = new ClaimsIdentity(claims, Scheme.Name); // Scheme.Name = "ApiKeyAuth" set in Program.cs
+        // var principal = new ClaimsPrincipal(identity);
+        // var ticket = new AuthenticationTicket(principal, Scheme.Name);
+        // return AuthenticateResult.Success(ticket);
+        
+        return AuthenticateResult.Success(new AuthenticationTicket(
+            new GenericPrincipal(new GenericIdentity("APIUser"), new[] { "ApiKeyHolder" }),
+            new AuthenticationProperties() { IsPersistent = false, AllowRefresh = false },
+            Scheme.Name));
     }
 }

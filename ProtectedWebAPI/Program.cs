@@ -9,14 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add API Key Authentication
 // Reference: https://stackoverflow.com/a/75059938/8644294
 builder.Services
-    .AddAuthentication("ApiKeyAuth") // Specifying default AuthN scheme here
+    .AddAuthentication() // Specify default AuthN scheme here if you'd like, for eg: .AddAuthentication("ApiKeyAuth")
     .AddScheme<ApiKeyAuthNSchemeOptions, ApiKeyAuthNSchemeHandler>(
         "ApiKeyAuth",
         opts =>
             opts.ApiKey = builder.Configuration.GetValue<string>("Authentication:ApiKey")!
     );
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Add a policy
+    options.AddPolicy("APIKeyHolderPolicy", policy =>
+    {
+        policy.RequireRole("APIKeyHolder");
+    });
+});
 // Stuff I added 👆
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -67,8 +74,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 // Stuff I added 👆
 
-app.MapGet("/weather", () =>
+app.MapGet("/weather", (HttpContext context) =>
 {
+    Console.WriteLine($"User accessing this endpoint is: {context?.User.Identity?.Name}"); // APIUser
+    Console.WriteLine($"User accessing this endpoint `IsInRole(\"APIKeyHolder\")`: {context?.User.IsInRole("APIKeyHolder")}"); // True
+    
     var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 
     return Enumerable.Range(1, 5)
@@ -78,7 +88,7 @@ app.MapGet("/weather", () =>
         .ToArray();
 })
 // Stuff I added 👇
-.RequireAuthorization();
+.RequireAuthorization("APIKeyHolderPolicy");
 //.AddEndpointFilter<ApiKeyEndpointFilter>();
 // Stuff I added 👆
 
