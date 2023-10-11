@@ -1,157 +1,65 @@
-# blazor-api-identity
-Sign in users and call a protected API from a Blazor Server app using Identity endpoints introduced in .NET 8.
-The Identity API endpoints provide APIs for authenticating with that app, and that is all. IdentityServer and OpenIddict provide something very different.
+# blazor-identity-api
+Sign in users using `AspNetCore.Identity` (`.NET 8 RC2`) in a Blazor Server app using cookie authentication and call a protected API using API Key authentication.
 
-<img width="650" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/4d0361cb-b308-46d6-b307-9d05b07be1ad">
+Run both of the projects, login using Username: `ashish@example.com` and Password: `Password123!`.
+Navigate to Weather page and you can see the weather data being fetched from a secured API:
 
-References: [Identity API endpoints](https://andrewlock.net/exploring-the-dotnet-8-preview-introducing-the-identity-api-endpoints/), [Identity API endpoints with IdentityServer](https://andrewlock.net/can-you-use-the-dotnet-8-identity-api-endpoints-with-identityserver/).
+<img width="870" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/84982d65-7bfa-4d33-b749-3fcb03b3688f">
 
-## Add a new API Project
-Add a new API project: `IdentityWebAPI`.
+## How I created the projects
+### BlazorServerClient project
+1. Installed ef tool
+   `dotnet tool update --global dotnet-ef --prerelease`
+   
+2. I used Rider to create the project:
+   <img width="770" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/39a2da4e-bee7-40ec-9ff6-7d077c0d057d">
 
-<img width="250" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/3700efb7-7bf6-4f3a-9720-5c46e4ef4fd6">
+   Hit Create
 
-## Install nuget packages:
-````
-# The main package for SQLite EF Core support
-dotnet add package Microsoft.EntityFrameworkCore.SQLite --prerelease
+3. I ran the migrations
+   `dotnet ef database update`
 
-# Contains shared build-time components for EF Core
-dotnet add package Microsoft.EntityFrameworkCore.Design --prerelease
+4. Added some missing middleware not included in the template
+   
+   <img width="220" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/060dd0aa-1b65-4b6d-96cd-6d8b708f1ca7">
 
-# The ASP.NET Core Identity integration for EF Core
-dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --prerelease
-````
+5. Launched the app, created a new user and signed right in.
 
-Install ef tool:
-````
-dotnet tool update --global dotnet-ef --prerelease
-````
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/30e54bad-ea90-430f-a073-84c0d1aa81c8">
+### ProtectedWebAPI project
+1. I used Rider to create the project
+   
+   <img width="550" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/88f370b8-f6e8-43c0-849e-be30d5d0cf30">
+   
+3. Added API Key authentication to it. Take a look at the code to see how I implemented it. I referenced mostly [this](https://github.com/jpdillingham/HMACAuth) and [this](https://stackoverflow.com/questions/70277577/asp-net-core-simple-api-key-authentication/75059938#75059938).
+   
+## Issues in the BlazorServerClient project
+1. The Logout doesn't work:
+   
+   Click `Logout` on the bottom left.
+   
+   <img width="650" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/74d888f4-4b26-4b81-8134-fe9cdef72ffb">
 
-## Add `AppDbContext`
-Add connection string in `appsettings.json` and register the app dbcontext in `Program.cs`
-`appsettings.json`
-````
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=my_test_app.db"
-  }
-}
-````
+   You'll get this error and the user will be never logged out.
+   <img width="1675" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/7bf641f1-7542-4f11-87cb-7a69a594b3f4">
 
-`AppUser`:
-````
-public class AppUser : IdentityUser
-{
-    // Add customisations here later
-}
-````
 
-`AppDbContext`:
-````
-public class AppDbContext : IdentityDbContext<AppUser>
-{
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-}
-````
 
-`Program.cs`
-````
-using Microsoft.EntityFrameworkCore;
+3. Lot of errors show up. Could be a bug in Rider. (The app runs fine though).
+   
+   <img width="1405" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/bda6aae4-1bf8-4e3a-b31b-d05dba1038f0">
 
-var builder = WebApplication.CreateBuilder(args);
 
-// Add EF Core
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+## Call ProtectedWebAPI from BlazorServerClient
+In the client project, I setup the ProtectedWebAPI Url and ApiKey in appsettings.json and used that info in Program.cs to call the API.
 
-// ...
-````
+appsettings.json:
 
-## Add Identity services:
-In `Program.cs`, add this service:
-````
-// Add Identity services:
-builder.Services
-    // Configures Bearer and Cookie authentication, add core Identity services such as the UserManager, SignInManager
-    .AddIdentityApiEndpoints<AppUser>()
-    .AddEntityFrameworkStores<AppDbContext>();
-````
-The `AddIdentityApiEndpoints<>` method does several things:
+<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/f8a99aa4-6768-447b-bc4c-e9752d1e896b">
 
-1. Configures Bearer and cookie authentication.
-2. Adds core Identity services such as the `UserManager`.
-3. Adds services required by the Identity API endpoints such as the `SignInManager`, token providers, and a no-op `IEmailSender` implementation.
+Program.cs
 
-## Create the database:
-Create a migration and update the database.
-````
-dotnet ef migrations add CreateIdentityTables -o Data/Migrations
-dotnet ef database update
-````
-<img width="700" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/9c5a9f0c-9f13-4c3e-bd4c-61a9a23cf7a4">
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/81f7e84a-4360-45a1-90d7-360b28c003b6">
 
-<img width="200" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/58206735-d384-40f4-bb96-82befaaf9f3b">
+WeatherForecastService.cs:
 
-## Add authorization to API:
-<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/4f5f6cd7-b06a-4508-af63-a476064cd7e1">                   
-
-<img width="450" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/fccd94bd-d535-4376-9e73-079dadbe9386">                    
-
-<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/e1dab81e-b3be-4d8d-922b-35c33525f69a">
-
-## Take it for a test ride:
-<img width="400" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/fefe5a54-d2e9-4bfd-886d-34222aae1ff4">
-
-## Add the Identity API endpoints:
-Use prefix of `"/identity"` by using `MapGroup`.
-
-<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/e631dbe0-6846-460c-a506-6d170faea12b">
-
-Check out Swagger UI:
-
-<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/a627fa7f-f10b-4e82-90a5-8caa16ce5872">
-
-## Test it using Rider's built-in HttpClient support:
-<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/d8de0b98-b293-45e5-b0e7-d561cc734002">
-
-Generate Request:
-
-<img width="350" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/2ea76b1c-37af-4619-901c-c14ad2670152">
-
-Result:
-
-<img width="800" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/c52baf79-1421-454e-8a6f-fd0693f2325b">
-
-## Registering a new user:
-Using `IdentityWebAPI.http` file that was created by default when I created the API.
-
-<img width="800" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/9c04fc69-71ac-4728-8009-8face8603fdd">
-
-## Login and retrieve tokens:
-<img width="450" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/aa55a114-9961-4324-908b-5c795e027dcd">
-
-## Call Forecast API with bearer token
-See `.http` file for an example.
-## Fetch new access token
-See `.http` file for an example.
-
-## Read this [excellent article](https://andrewlock.net/should-you-use-the-dotnet-8-identity-api-endpoints/).
-The recommended approach when your frontend SPA is served from the same domain as your API (and so can share cookies) is to simply use cookie authentication.
-
-If you're not hosting your app and API on the same domain, you can still use cookies for authentication with the backend for fronted (BFF) pattern. This is an increasingly common pattern (similarly recommended by the IETF) in which you use cookies to authenticate with a backend .NET app, and then that app handles retrieving and storing the access tokens. With the BFF pattern, the tokens are never sent to the browser.
-
-### This is the recommended way of logging in users ("cookie mode"):
-````
-### Login (Cookie mode, persist cookies (i.e. not session cookies))
-POST http://localhost:5117/account/login?cookieMode=true&persistCookies=true
-Content-Type: application/json
-
-{
-  "username": "ashish@example.com",
-  "password": "SuperSecret1!"
-}
-````
+<img width="750" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/b518a68a-a07f-417b-a9fb-dac19ea7e94f">
