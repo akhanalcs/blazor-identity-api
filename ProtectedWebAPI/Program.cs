@@ -1,3 +1,6 @@
+using Microsoft.OpenApi.Models;
+using ProtectedWebAPI.Authentication;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,7 +8,34 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Description = "The API Key to access the API",
+        Type = SecuritySchemeType.ApiKey,
+        Name = "x-api-key",
+        In = ParameterLocation.Header,
+        Scheme = "ApiKeyScheme"
+    });
+
+    var scheme = new OpenApiSecurityScheme
+    {
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "ApiKey" // SecurityDefinitionName from above
+        },
+        In = ParameterLocation.Header
+    };
+
+    var requirement = new OpenApiSecurityRequirement()
+    {
+        { scheme, new List<string>() }
+    };
+    
+    options.AddSecurityRequirement(requirement);
+});
 
 var app = builder.Build();
 
@@ -29,7 +59,7 @@ app.MapGet("/weather", () =>
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]))
         .ToArray();
-});
+}).AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.Run();
 

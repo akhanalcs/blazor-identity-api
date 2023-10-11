@@ -1,4 +1,4 @@
-namespace BlazorServerClientOld;
+namespace BlazorServerClient.Services;
 
 public class IdentityEndpointService(HttpClient httpClient, IConfiguration configuration)
 {

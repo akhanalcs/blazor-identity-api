@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using BlazorServerClient.Components;
 using BlazorServerClient.Data;
 using BlazorServerClient.Identity;
+using BlazorServerClient.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,17 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender, NoOpEmailSender>();
+
+// 👇 Stuff I added
+builder.Services.AddSingleton<WeatherForecastService>();
+
+// Configure the HttpClient for the forecast service
+var protectedApiUrl = builder.Configuration["ProtectedWebAPI:BaseUrl"]!;
+builder.Services.AddHttpClient<WeatherForecastService>(client =>
+{
+    client.BaseAddress = new Uri(protectedApiUrl);
+});
+// 👆 Stuff I added
 
 var app = builder.Build();
 
