@@ -8,10 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Stuff I added 👇
 // Add API Key Authentication
 // Reference: https://stackoverflow.com/a/75059938/8644294
+const string apiKeyAuthScheme = "ApiKeyAuth";
 builder.Services
     .AddAuthentication() // Specify default AuthN scheme here if you'd like, for eg: .AddAuthentication("ApiKeyAuth")
     .AddScheme<ApiKeyAuthNSchemeOptions, ApiKeyAuthNSchemeHandler>(
-        "ApiKeyAuth",
+        apiKeyAuthScheme,
         opts =>
             opts.ApiKey = builder.Configuration.GetValue<string>("Authentication:ApiKey")!
     );
@@ -21,7 +22,8 @@ builder.Services.AddAuthorization(options =>
     // Add a policy
     options.AddPolicy("APIKeyHolderPolicy", policy =>
     {
-        policy.RequireRole("APIKeyHolder");
+        policy.AddAuthenticationSchemes(apiKeyAuthScheme)
+              .RequireRole("APIKeyHolder");
     });
 });
 // Stuff I added 👆
