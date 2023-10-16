@@ -1,11 +1,49 @@
-﻿@page "/auth"
+﻿@page "/github/auth"
+@using System.Security.Claims
+@using System.Net.Http.Headers
 
-@attribute [Authorize]
+@attribute [Authorize(Policy = "github-user-read")]
 
 <PageTitle>Auth</PageTitle>
 
-<h1>You are authenticated</h1>
+<h1>You can view this page because you are authorized with "github-user-read" policy. </h1>
 
 <AuthorizeView>
-    Hello @context.User.Identity?.Name!
+    <h4>Hello, @context.User.Identity?.Name!</h4>
+    <br/>
+    This is the info from GitHub call:
+    @_userInfo
 </AuthorizeView>
+
+@code{
+    [Inject]
+    private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    
+    [Inject]
+    private HttpClient HttpClient { get; set; } = null!;
+    
+    [Inject]
+    private IConfiguration Configuration { get; set; } = null!;
+    
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = default!;
+    
+    string? _userInfo;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _userInfo = await GetUserInfoFromGitHub();
+    }
+    
+    private async Task<string> GetUserInfoFromGitHub()
+    {
+        var userFromHttpContext = HttpContext.User;
+        var accessToken = userFromHttpContext.FindFirstValue("github-access-token")!;
+        var userInfoEndpoint = Configuration["Authentication:GitHub:UserInformationEndpoint"]!;
+        
+        using var request = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        using var result = await HttpClient.SendAsync(request);
+        return await result.Content.ReadAsStringAsync();
+    }
+}

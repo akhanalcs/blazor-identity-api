@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using BlazorServerClient.Components;
 using BlazorServerClient.Data;
 using BlazorServerClient.Identity;
+using BlazorServerClient.OAuth;
 using BlazorServerClient.Services;
 using Microsoft.AspNetCore.Authentication;
 
@@ -29,10 +30,6 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"]!;
         microsoftOptions.SignInScheme = IdentityConstants.ExternalScheme; // Very Important!
     })
-    // OAuthHandler will run for this service when Middleware is executed.
-    // Command + Click on the method to view the handler
-    // When the app.UseAuthentication middleware runs, HandleRemoteAuthenticateAsync method in OAuthHandler
-    // will load the authentication session from the authorization code (one time password to be ysed for exchanging with access token)
     .AddOAuth("github", githubOptions =>
     {
         githubOptions.ClientId = builder.Configuration["Authentication:GitHub:ClientId"]!;
@@ -40,14 +37,20 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         githubOptions.AuthorizationEndpoint = builder.Configuration["Authentication:GitHub:AuthorizationEndpoint"]!;
         githubOptions.TokenEndpoint = builder.Configuration["Authentication:GitHub:TokenEndpoint"]!;
         githubOptions.UserInformationEndpoint = builder.Configuration["Authentication:GitHub:UserInformationEndpoint"]!;
-        githubOptions.CallbackPath = builder.Configuration["Authentication:GitHub:CallbackPath"]!;
+        
+        // This can be anything. Put something unique.
+        // For eg: "/signin-github" or "/signin-github-cb"
+        // Just make sure to put the same in App registration as well
+        githubOptions.CallbackPath = builder.Configuration["Authentication:GitHub:CallbackPath"]!; 
 
-        //githubOptions.Scope.Add("https://graph.microsoft.com/user.read");
+        // https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
+        githubOptions.Scope.Add("read:user");
+        
         // This will save the token in the cookie which will go to the browser
-        // which won't cause an issue because cookies can't be read by just anyone.
+        // which won't cause an issue security wise because cookies can't be read by just anyone.
         // It's just that you won't be able to work with the token.
         // For eg: If your cookie lasts for 90 days but AccessToken expires in 15 minutes.
-        // If you put it in the db you can refresh your tokens. THis will also make the cookie small.
+        // If you put it in the db you can refresh your tokens. This will also make the cookie small.
         // githubOptions.SaveTokens = true;
         
         githubOptions.SignInScheme = IdentityConstants.ExternalScheme; // Very Important!
@@ -55,20 +58,81 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         githubOptions.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
         
         // Invoked after the provider successfully authenticates a user.
+        // Base implementation for this is in: OAuthHandler.CreateTicketAsync
+        // You can see how Microsoft does it in their package by going here: MicrosoftAccountHandler.CreateTicketAsync
         githubOptions.Events.OnCreatingTicket = async context =>
         {
-            // Save access token in the Db here
-            // var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+            // Some stuff related to AuthN
             using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
             using var result = await context.Backchannel.SendAsync(request);
-            var user = await result.Content.ReadFromJsonAsync<JsonElement>();
-            context.RunClaimActions(user);
+            var userFromUserInfoEndpoint = await result.Content.ReadFromJsonAsync<JsonElement>();
+            context.RunClaimActions(userFromUserInfoEndpoint);
+
+            // Some new stuff related to AuthZ
+            var authHandlerProvider = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+            var extAuthHandler = await authHandlerProvider.GetHandlerAsync(context.HttpContext, IdentityConstants.ExternalScheme);
+            var appAuthHandler = await authHandlerProvider.GetHandlerAsync(context.HttpContext, IdentityConstants.ApplicationScheme);
+
+            var extAuthResult = await extAuthHandler!.AuthenticateAsync();
+            var appAuthResult = await appAuthHandler!.AuthenticateAsync();
+
+            if (extAuthResult.Succeeded)
+            {
+                context.Fail("Authentication failed bruh!");
+                return;
+            }
+
+            var cp = extAuthResult.Principal;
+            var userId = cp?.FindFirstValue("user_id")!;
+            
+            // Store Access token on this userId
+            var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await userManager.FindByIdAsync(userId);
+            // Update your user here
+            if (user is not null)
+            {
+                user.GitHubAccessToken = context.AccessToken!;
+                await userManager.UpdateAsync(user);
+            }
+
+            context.Principal = cp?.Clone();
+            var identity = context.Principal!.Identities.First(i => i.AuthenticationType == IdentityConstants.ExternalScheme);
+            identity.AddClaim(new Claim("some-custom-claim", "present"));
         };
     })
-    .AddIdentityCookies();
+    .AddIdentityCookies(o =>
+    {
+        o.ApplicationCookie!.PostConfigure(options =>
+        {
+            var del = options.Events.OnRedirectToAccessDenied;
+            options.Events.OnRedirectToAccessDenied = ctx =>
+            {
+                if (ctx.Request.Path.StartsWithSegments("/github"))
+                {
+                    return ctx.HttpContext.ChallengeAsync("github");
+                }
+                else
+                {
+                    // Otherwise do default stuff
+                    return del(ctx);
+                }
+            };
+        });
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("github-user-read", pb =>
+    {
+        pb.RequireAuthenticatedUser()
+            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme)
+            .RequireClaim("some-custom-claim", "present");
+    });
+});
 
 // 👇 Stuff I added
+builder.Services.AddTransient<IClaimsTransformation, GitHubTokenClaimsTransformation>();
 builder.Services.AddAntiforgery();
 // 👆 Stuff I added
 
