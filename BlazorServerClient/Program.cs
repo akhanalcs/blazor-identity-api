@@ -27,6 +27,7 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     {
         microsoftOptions.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"]!;
         microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"]!;
+        microsoftOptions.SignInScheme = IdentityConstants.ExternalScheme; // Very Important!
     })
     // OAuthHandler will run for this service when Middleware is executed.
     // Command + Click on the method to view the handler
@@ -41,6 +42,7 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         githubOptions.UserInformationEndpoint = builder.Configuration["Authentication:GitHub:UserInformationEndpoint"]!;
         githubOptions.CallbackPath = builder.Configuration["Authentication:GitHub:CallbackPath"]!;
 
+        //githubOptions.Scope.Add("https://graph.microsoft.com/user.read");
         // This will save the token in the cookie which will go to the browser
         // which won't cause an issue because cookies can't be read by just anyone.
         // It's just that you won't be able to work with the token.
@@ -48,16 +50,15 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         // If you put it in the db you can refresh your tokens. THis will also make the cookie small.
         // githubOptions.SaveTokens = true;
         
-        githubOptions.SignInScheme = IdentityConstants.ApplicationScheme;
-        
+        githubOptions.SignInScheme = IdentityConstants.ExternalScheme; // Very Important!
         githubOptions.ClaimActions.MapJsonKey("sub", "id");
         githubOptions.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
         
+        // Invoked after the provider successfully authenticates a user.
         githubOptions.Events.OnCreatingTicket = async context =>
         {
             // Save access token in the Db here
             // var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
-            
             using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
             using var result = await context.Backchannel.SendAsync(request);
