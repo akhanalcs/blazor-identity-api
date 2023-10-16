@@ -323,14 +323,18 @@ The location is:
 <img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/2548df88-a5ea-4b44-8dc5-4148e487ff41">
 
 ### Calling `AuthorizationEndpoint` endpoint
-We're redirected to "authorize endpoint".
+We're redirected to "authorize endpoint" from the first call.
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/754f5eae-e964-429f-82e1-789d2e30f828">
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/ac3af5f0-bc25-4119-8d40-81137e93a278">
+
+Auth server puts the code in the query string and sends a redirect:
+
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/3e4d89db-7e01-40f4-93a1-a1e2a251a588">
 
 ### Calling `TokenEndpoint`
 And now we have a code:
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a91c78d1-857f-4f71-9a00-df51771de3fe">
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/bd646f9e-8b7a-46dc-9f9e-88b0ccf1703f">
 
 We grab this in `OAuthHandler.cs`'s `HandleRemoteAuthenticateAsync` method:
 
@@ -364,6 +368,12 @@ After the call, I get these 2 Claims:
 <img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/2a0e1618-fb33-4261-8b82-14afe1114efa">
 
 ### Signing In the user with `Identity.External` scheme
+After the code exchange, we're directed:
+
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/0d0139bd-723b-4b21-a969-8c840a76c940">
+
+At this point, we already have `External` cookie set.
+
 Now we're in `CookieAuthenticationHandler.cs`'s `ReadCookieTicket` method.
 
 <img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/85352522-e2b5-48f7-ae07-62f8d2d43ab3">
@@ -396,7 +406,7 @@ And Application tab:
 
 <img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/11779012-59a3-409d-8803-be1db99447fb">
 
----
+### Signing In the user with `Identity.Application` scheme
 
 Now I'm in `ExternalLogin.razor` to get Signed in:
 
