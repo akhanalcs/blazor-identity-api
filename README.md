@@ -374,6 +374,10 @@ After the code exchange, we're directed:
 
 At this point, we already have `External` cookie set.
 
+This happens because I set it here:
+
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/059fb7ff-1e48-4d44-99c8-6723dfa4b8d6">
+
 ### Signing In the user with `Identity.Application` scheme
 Now I'm in `ExternalLogin.razor` to get Signed in:
 
