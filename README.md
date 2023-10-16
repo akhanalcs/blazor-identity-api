@@ -374,40 +374,7 @@ After the code exchange, we're directed:
 
 At this point, we already have `External` cookie set.
 
-Now we're in `CookieAuthenticationHandler.cs`'s `ReadCookieTicket` method.
-
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/85352522-e2b5-48f7-ae07-62f8d2d43ab3">
-
-And complete this method:
-
-<img width="450" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/e70c53d1-dc4f-4e43-804b-37d175eabab0">
-
-At the end of this method, we're redirected:
-
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/39487cf8-4707-46c7-9e9f-b38b7bb99c46">
-
----
-
-Back to default authentication scheme -> Authentication middleware runs to completion without any cookie set this time.
-
----
-
-Back to `CookieAuthenticationHandler.cs`'s `ReadCookieTicket` method and cookie is present in the DefaultHttpContext.
-
-Scheme is External.
-
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/dc6e7c33-77e8-47af-b6f2-8f30e1b5d28e">
-
-The network tab shows this:
-
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a012f753-b82c-4ac5-a244-2dbe89e6b490">
-
-And Application tab:
-
-<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/11779012-59a3-409d-8803-be1db99447fb">
-
 ### Signing In the user with `Identity.Application` scheme
-
 Now I'm in `ExternalLogin.razor` to get Signed in:
 
 <img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/6c589021-f374-42fc-8eeb-c45ed7cded16">
