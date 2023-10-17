@@ -150,6 +150,20 @@ Grab `clientid` and `clientsecret`.
 ### Setup `Program.cs`
 Just look at the code.
 
+## AuthN and AuthZ Basics [Reference](https://youtu.be/02Yh3sxzAYI?si=LAFGO54TlB7am5Gn).
+This is what cookie contains
+
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/63622179-0729-4005-94b2-bb182dcc9c6d">
+
+**Big picture:**
+
+`app.UseRouting()`: URL is matched to the endpoint.
+`app.UseEndpoints()`: Actual endpoints are registered.
+
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a605b6d9-173e-41e6-b0c2-1fa166347ebc">
+
+AuthZ calls challege method on the authentication handler.
+
 ## Taking a look at Authentication middleware
 Every time you navigate to ANY page in the app, the `Authentication` middleware runs (**It's middleware duh!**).
 
@@ -226,11 +240,6 @@ Now let's get back to see how this line executes:
 It just calls `.AuthenticateAsync` on the `AuthenticationService`:
 
 <img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/c11a1bbe-131d-4777-98b3-9910f34cdfba">
-
-#### Side Note. [Reference](https://youtu.be/02Yh3sxzAYI?si=LAFGO54TlB7am5Gn).
-This is what cookie contains
-
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/63622179-0729-4005-94b2-bb182dcc9c6d">
 
 #### Let's see this in action:
 See the SchemeName and Handler:
@@ -436,8 +445,6 @@ Cookie gets created after `.OnCreatingTicket` completes.
 
 The request completes.
 
-`app.UseRouting()`: URL is matched to the endpoint.
-`app.UseEndpoints()`: Actual endpoints are being registred.
 
 
 
