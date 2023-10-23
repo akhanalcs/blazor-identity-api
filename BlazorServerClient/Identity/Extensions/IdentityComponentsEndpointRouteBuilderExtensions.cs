@@ -26,17 +26,21 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromForm] string provider,
             [FromForm] string returnUrl) =>
         {
+            // To see this being explained in a video, watch this:
+            // https://youtu.be/daeVaU5CmPw?si=bAXS1zO6TWnuA5xz&t=380
             IEnumerable<KeyValuePair<string, StringValues>> query = 
             [
                 new("ReturnUrl", returnUrl),
                 new("Action", ExternalLogin.LoginCallbackAction)
             ];
 
+            // This is where I want my External Auth Provider to redirect me after
             var redirectUrl = UriHelper.BuildRelative(
                 context.Request.PathBase,
                 $"/Account/ExternalLogin",
                 QueryString.Create(query));
 
+            // You can use properties(AuthenticationProperties) to preserve data between Challenge phase and callback phase
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Results.Challenge(properties, [provider]);
         });

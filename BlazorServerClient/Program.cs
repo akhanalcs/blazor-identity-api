@@ -29,6 +29,13 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         microsoftOptions.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"]!;
         microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"]!;
         microsoftOptions.SignInScheme = IdentityConstants.ExternalScheme; // Very Important!
+
+        microsoftOptions.Events.OnCreatingTicket += context =>
+        {
+            // This principal will be handed over to microsoftOptions.SignInScheme AuthN handler
+            //context.Principal
+            //return Task.CompletedTask;
+        };
     })
     .AddOAuth("github", githubOptions =>
     {
@@ -60,6 +67,9 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
         // Invoked after the provider successfully authenticates a user.
         // Base implementation for this is in: OAuthHandler.CreateTicketAsync
         // You can see how Microsoft does it in their package by going here: MicrosoftAccountHandler.CreateTicketAsync
+        // External Cookie is not set when this runs. It'll be set after it's completed in 'HandleRequestAsync' method of 'RemoteAuthenticationHandler.cs'
+        // CookieAuthenticationHandler.cs -> HandleSignInAsync
+        // We come here after exchanging code for a token and before creating a ticket
         githubOptions.Events.OnCreatingTicket = async context =>
         {
             // Some stuff related to AuthN
@@ -69,8 +79,10 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
             var userFromUserInfoEndpoint = await result.Content.ReadFromJsonAsync<JsonElement>();
             context.RunClaimActions(userFromUserInfoEndpoint);
 
+            var gitHubId = context.Principal?.FindFirstValue("sub");
+            
             // Some new stuff related to AuthZ
-            var authHandlerProvider = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+            /*var authHandlerProvider = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
             var extAuthHandler = await authHandlerProvider.GetHandlerAsync(context.HttpContext, IdentityConstants.ExternalScheme);
             var appAuthHandler = await authHandlerProvider.GetHandlerAsync(context.HttpContext, IdentityConstants.ApplicationScheme);
 
@@ -85,7 +97,7 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
 
             var cp = extAuthResult.Principal;
             var userId = cp?.FindFirstValue("user_id")!;
-            
+
             // Store Access token on this userId
             var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
             var user = await userManager.FindByIdAsync(userId);
@@ -98,14 +110,13 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
 
             context.Principal = cp?.Clone();
             var identity = context.Principal!.Identities.First(i => i.AuthenticationType == IdentityConstants.ExternalScheme);
-            identity.AddClaim(new Claim("some-custom-claim", "present"));
+            identity.AddClaim(new Claim("some-custom-claim", "present"));*/
         };
     })
     .AddIdentityCookies(o =>
     {
         o.ApplicationCookie!.PostConfigure(options =>
         {
-            var del = options.Events.OnRedirectToAccessDenied;
             options.Events.OnRedirectToAccessDenied = ctx =>
             {
                 if (ctx.Request.Path.StartsWithSegments("/github"))
@@ -115,7 +126,7 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
                 else
                 {
                     // Otherwise do default stuff
-                    return del(ctx);
+                    return options.Events.OnRedirectToAccessDenied(ctx);
                 }
             };
         });
