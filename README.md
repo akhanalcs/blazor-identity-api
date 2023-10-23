@@ -150,6 +150,20 @@ Grab `clientid` and `clientsecret`.
 ### Setup `Program.cs`
 Just look at the code.
 
+## AuthN and AuthZ Basics [Reference](https://youtu.be/02Yh3sxzAYI?si=LAFGO54TlB7am5Gn).
+This is what cookie contains
+
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/63622179-0729-4005-94b2-bb182dcc9c6d">
+
+**Big picture:**
+
+`app.UseRouting()`: URL is matched to the endpoint.
+`app.UseEndpoints()`: Actual endpoints are registered.
+
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a605b6d9-173e-41e6-b0c2-1fa166347ebc">
+
+AuthZ calls challege method on the authentication handler.
+
 ## Taking a look at Authentication middleware
 Every time you navigate to ANY page in the app, the `Authentication` middleware runs (**It's middleware duh!**).
 
@@ -402,3 +416,35 @@ Cookie is set:
 Now the homepage looks pretty neat:
 
 <img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9fc58ba7-9fad-4ca2-9c38-89da1fb598e1">
+
+## Add OAuth Authorization
+Add a new column in the database to store GitHub access tokens.
+
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9d698e76-b1ec-4b90-a0a6-afa70d0f2aa1">
+
+Scaffold a new migration and apply it to the database:
+````
+dotnet ef migrations add AddGithubAccessTokenColumn
+dotnet ef database update
+````
+
+`ValueKind = Object : "{"login":"affableashish","id":30603497,"node_id":"MDQ6VXNlcjMwNjAzNDk3","avatar_url":"https://avatars.githubusercontent.com/u/30603497?v=4","gravatar_id":"","url":"https://api.github.com/users/affableashish","html_url":"https://github.com/affableashish","followers_url":"https://api.github.com/users/affableashish/followers","following_url":"https://api.github.com/users/affableashish/following{/other_user}","gists_url":"https://api.github.com/users/affableashish/gists{/gist_id}","starred_url":"https://api.github.com/users/affableashish/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/affableashish/subscriptions","organizations_url":"https://api.github.com/users/affableashish/orgs","repos_url":"https://api.github.com/users/affableashish/repos","events_url":"https://api.github.com/users/affableashish/events{/privacy}","received_events_url":"https://api.github.com/users/affableashish/received_events","type":"User","site_admin":false,"name":"Ashish Khanal","company":null,"blog":"","location":"Columbus, OH","email":null,"hireable":true,"bio":"Love the joy of writing clean, maintainable code.","twitter_username":null,"public_repos":22,"public_gists":1,"followers":1,"following":7,"created_at":"2017-07-31T18:20:31Z","updated_at":"2023-10-01T01:53:24Z","private_gists":0,"total_private_repos":4,"owned_private_repos":4,"disk_usage":35460,"collaborators":0,"two_factor_authentication":false,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}"`
+AuthorizationHeaderProvider
+
+We get Access TOken in `HandleRemoteAuthenticateAsync` in `OUathHanlder.cs`, and use that to create a Ticket.
+Ticket is what gets into the cookie.
+
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/f826d690-a4c9-45f1-b99b-83719d4c3d5c">
+
+`.OnCreatingTicket` will populate claims:
+
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/83c9c617-4323-41ad-9580-0881f2b89b26">
+
+
+Cookie gets created after `.OnCreatingTicket` completes.
+
+The request completes.
+
+
+
+
