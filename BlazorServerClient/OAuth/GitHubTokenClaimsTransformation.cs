@@ -10,7 +10,10 @@ public class GitHubTokenClaimsTransformation(UserManager<ApplicationUser> userMa
 {
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
-        var userId = principal.FindFirstValue("user_id")!;
+        // ClaimTypes.Name = email
+        // ClaimTypes.NameIdentifier = Id
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        
         var userFromDb = await userManager.FindByIdAsync(userId);
         
         if (userFromDb is null)
@@ -19,10 +22,11 @@ public class GitHubTokenClaimsTransformation(UserManager<ApplicationUser> userMa
         }
         
         var cp = principal.Clone();
-        var accessToken = userFromDb.GitHubAccessToken;
+        //var accessToken = userFromDb.GitHubAccessToken;
         
-        var identity = cp.Identities.First(i => i.AuthenticationType == IdentityConstants.ExternalScheme);
-        identity.AddClaim(new Claim("github-access-token", accessToken));
+        // Identity.Application
+        var identity = cp.Identities.First(i => i.AuthenticationType == IdentityConstants.ApplicationScheme);
+        identity.AddClaim(new Claim("github-access-token", "something-i-came-up-with"));
         return cp;
     }
 }

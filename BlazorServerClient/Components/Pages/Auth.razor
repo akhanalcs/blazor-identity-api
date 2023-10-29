@@ -1,94 +1,54 @@
 ﻿@page "/github/auth"
 @using System.Security.Claims
-@using System.Net.Http.Headers
 @using System.Globalization
 
 @attribute [Authorize(Policy = "github-user-read")]
 
+@* NavigationManager.NavigateTo(url, true); // If you use it like this, this will take you to the url *@
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+@inject HttpClient HttpClient
+@* Used in interactive scenario *@
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Auth</PageTitle>
 
-<h1>You can view this page because you are authorized with "github-user-read" policy. </h1>
-
 <AuthorizeView>
-    <h4>Hello, @context.User.Identity?.Name!</h4>
-    <br/>
-    This is the info from GitHub call:
-    @_userInfo
+    <h3>Hello, @context.User.Identity?.Name!</h3>
+    <p>You can view this page because you are authorized with "github-user-read" policy. </p>
 </AuthorizeView>
 
 @code{
-    [Inject]
-    private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
-    
-    [Inject]
-    private HttpClient HttpClient { get; set; } = null!;
-    
-    [Inject]
-    private IConfiguration Configuration { get; set; } = null!;
-    
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = default!;
     
-    string? _userInfo;
-    
     protected override async Task OnInitializedAsync()
     {
-        _userInfo = await GetUserInfoFromGitHub();
+        await base.OnInitializedAsync();
     }
     
-    private async Task<string> GetUserInfoFromGitHub()
+    private string GetUserInfoFromGitHub()
     {
         var userFromHttpContext = HttpContext.User;
         var accessToken = userFromHttpContext.FindFirstValue("github-access-token")!;
-        var userInfoEndpoint = Configuration["Authentication:GitHub:UserInformationEndpoint"]!;
+        return $"Look this is some made-up token from GitHub: {accessToken}";
         
-        using var request = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        using var result = await HttpClient.SendAsync(request);
-        return await result.Content.ReadAsStringAsync();
+        // var userInfoEndpoint = Configuration["Authentication:GitHub:UserInformationEndpoint"]!;
+        // using var request = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
+        // request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        // using var result = await HttpClient.SendAsync(request);
+        // return await result.Content.ReadAsStringAsync();
     }
     
-    // Just an idea - I'm not even sure if this is the right way to do this.
-    // Forces the user to consent to specific scopes and perform
-    // Conditional Access to get specific claims.
-    private async Task RedirectUserToAuthorizeMoreScopes(string[]? scopes)
-    {
-        var tryThis = CreateBaseUriInSsrScenario();
-        var baseUri = "https://github.com/login/oauth/authorize";
-        var clientId = Configuration["Authentication:GitHub:ClientId"]!;
-        var redirectUri = "https://localhost:7074/signin-github";
-        // var redirectUri = NavigationManager.Uri;
-        var state = "somestringyo";
-        
-        IEnumerable<string> effectiveScopes = scopes ?? Array.Empty<string>();
-
-        string[] additionalBuiltInScopes =
-        {
-            "profile"
-        };
-
-        effectiveScopes = effectiveScopes.Union(additionalBuiltInScopes);
-
-        string url = $"${baseUri}" + "?"
-                     + $"clientid={clientId}"
-                     + $"&scope={string.Join(" ", effectiveScopes!)}"
-                     + "&response_type=code"
-                     + $"&redirect_uri={redirectUri}"
-                     + $"&state={state}";
-        
-        NavigationManager.NavigateTo(url, true);
-    }
-    
+    // This will create a Uri like this: https://localhost:7074. Not being used though.
     private string CreateBaseUriInSsrScenario()
     {
-        HttpRequest request = HttpContext.Request;
-        string baseUri = string.Format(
+        var request = HttpContext.Request;
+        var baseUri = string.Format(
             CultureInfo.InvariantCulture,
             "{0}://{1}/{2}",
-            request.Scheme,
-            request.Host.ToString(),
+            request.Scheme, // https
+            request.Host.ToString(), // localhost:7074
             request.PathBase.ToString().TrimStart('/'));
         return baseUri.TrimEnd('/');
     }
