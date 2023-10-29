@@ -95,7 +95,7 @@ Store the secret in `user-secrets`. Store ClientId in appsettings.json.
    <img width="550" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/77512a98-c156-47de-a7c1-5fe27adb2e03">
 
 ## How the claims showed up in the UI
-The services are finally setup at the last line of `MicrosoftAccountExtensions` where there's a call to `.AddOAuth`.
+The services are setup at the last line of `MicrosoftAccountExtensions` where there's a call to `.AddOAuth`.
 Here you can see the `MicrosoftAccountHandler`.
 
 <img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/f93e19a0-e5b7-4380-8497-9a75b7e7c088">
@@ -151,18 +151,32 @@ Grab `clientid` and `clientsecret`.
 Just look at the code.
 
 ## AuthN and AuthZ Basics [Reference](https://youtu.be/02Yh3sxzAYI?si=LAFGO54TlB7am5Gn).
-This is what cookie contains
-
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/63622179-0729-4005-94b2-bb182dcc9c6d">
-
-**Big picture:**
-
+### Big picture
 `app.UseRouting()`: URL is matched to the endpoint.
+
 `app.UseEndpoints()`: Actual endpoints are registered.
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a605b6d9-173e-41e6-b0c2-1fa166347ebc">
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a605b6d9-173e-41e6-b0c2-1fa166347ebc">
 
-AuthZ calls challege method on the authentication handler.
+### Cookie
+This is what cookie contains
+
+<img width="700" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/63622179-0729-4005-94b2-bb182dcc9c6d">
+
+You can retrieve those `Items` from `AuthenticateResult`.`AuthenticationProperties`.`Items`:
+
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/6fba6417-9d36-46c3-aca6-1e37ada61703">
+
+### External Authentication
+It is handled by `RemoteAuthenticationHandler`.
+
+<img width="700" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9560406a-76b6-4b84-8631-3cdf9938810c">
+
+#### Propietary provider support:
+Google, Facebook, Twitter, Microsoft Account etc
+
+#### Standard Protocol support:
+OpenID connect, WS-Federation, SAML etc.
 
 ## Taking a look at Authentication middleware
 Every time you navigate to ANY page in the app, the `Authentication` middleware runs (**It's middleware duh!**).
@@ -170,10 +184,6 @@ Every time you navigate to ANY page in the app, the `Authentication` middleware 
 It's the bit that's inside `app.UseAuthentication`:
 
 <img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/8c89eac8-2b5f-4ae0-8840-94da5bd0e3bd">
-
-This runs:
-
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/061212b0-6a3b-4680-830e-cd4f246a2426">
 
 ### Handlers:
 See how `IAuthenticationHandler` looks like:
@@ -233,7 +243,7 @@ To finally here:
 
 Here you can see that this service has Schemes, Handlers etc. to authenticate a request.
 
-Now let's get back to see how this line executes:
+Now let's get back to see how this line in `AuthenticationMiddleware.cs` executes:
 
 <img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/230d9e13-1e78-4892-9ff3-8877a10b574b">
 
@@ -271,151 +281,252 @@ Then we finally get this result:
 <img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/cf863f30-b60b-4605-809f-c653cab8b4da">
 
 ## Taking a look at GitHub Authentication in detail
+The schemes the app has:
+
+<img width="550" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/36b17dc7-1a95-4cbe-98a7-b5bfd6e140bf">
+
+`ExternalLoginPicker.razor` shows the external logins:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/c6b90469-acf2-4317-b0d1-1e44ca7ce5ab">
+
+### Click "OAuth" button.
+
 <img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/917e57cb-8608-433d-b6d0-3de029224c29">
 
-Go ahead and click "OAuth" button.
+This will call the POST endpoint:
 
-### Setup for the `AuthorizationEndpoint` call
+<img width="700" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9b59d135-20b7-4400-bce6-8f917add9f66">
 
-We end up with this POST in `ExternalLoginPicker.razor`:
+`/Account/PerformExternalLogin` in `Identity/Extensions/IdentityComponentsEndpointRouteBuilderExtensions.cs`
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/b44a5ae3-7466-4f47-b7b0-30b39d59abe1">
+This is where I want GitHub to redirect me after completing authentication:
 
-**Request in Network tab shows POST request with Antiforgery cookie:**
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/183c5061-7d9e-4d91-923c-f2ac911bb891">
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/8b87c997-ba8b-410c-930a-f5f95c52d135">
+Use `properties` to preserve data between Challenge phase and Callback phase
 
-We land in `AuthenticationMiddleware`.
+<img width="700" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/1d5b1e07-eecd-47b2-84b8-7b2687c7f4f8">
 
-Now we land in `AuthenticationService.cs`'s `ChallengeAsync` method:
+### Challenge (scheme)
+<img width="450" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/6636b1d2-e371-4546-98b5-560ece855a0b">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/bec3200a-6962-4b5c-bacb-36c5caf2d5f5">
+Now we're in `OAuthHandler.cs`
 
-The `scheme` is "github".
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/e614aba9-b0ea-41d3-8414-216683697b1a">
 
-The `HttpContext` looks like this:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/cb1144bd-c697-40fb-951d-f6d7c050d3fd">
 
-<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/70573903-ff18-403e-8788-feb62ea50dbe">
+### Redirect to external provider
+`https://localhost:7074/Account/PerformExternalLogin` redirects us to GitHub's authorization endpoint:
 
-Now we land in `AuthenticationHandler.cs`'s `ChallengeAsync` method:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/50538aa5-0641-434a-ae10-2e206cb08481">
 
-<img width="450" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/b5730980-eeb6-4c1c-8612-c916e53f5a5d">
+So the app goes to that location:
 
-Now we land in `OAuthHandler.cs`'s `HandleChallengeAsync` method:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/6c1de721-730c-4a9b-9212-f1c0d37c5f34">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/794934ab-1c21-4edb-abcf-edca542aff6a">
+At this ppint the user authenicates with GitHub (NOT this app) and the user authorizes this app to fetch user info from GitHub by accepting the consent screen.
 
-We end up in `BuildChallengeUrl`:
+### Callback
+User gets redirected with the one time code to the callback url:
 
-<img width="700" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/1a2279d8-981a-4fa6-acbc-69ae8e727696">
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/b00ae5cb-8049-4f04-a66a-7028dc05c30e">
 
-[This is example during call to Microsoft and not GitHub that this example is exploring]
-The state is created from `AuthenticationProperties`:
+#### AuthN middleware asks handlers who wants to process request
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/bd2a2f49-ec27-484c-ac78-4c8d2fc1f1fb">
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/98c6bffa-9d49-4918-9d2f-85fdb8535eaa">
+`OAuthHandler` says "I will" because `ShouldHandleRequestAsync()` returns `true` as seen in `RemoteAuthenticationHandler.cs`:
 
-`state`:
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/418de550-8f9a-489b-b466-5c6e6d065c72">
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/19fd16d9-aa5c-4750-9930-118443d54715">
+#### Handler does the protocol post-processing
+When line 87 shown above runs, we end up in `OAuthHandler.cs`:
 
-`queryStrings`
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/f8c82466-55ac-4b97-a8ba-533df1165d57">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9269e913-518c-491a-83e2-48cc9389c148">
+The query has code and state.
 
-The `authorizationEndpoint` in `OAuthHandler.cs`'s `HandleChallengeAsync` method:
+<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/e5d61a96-0f32-492a-a095-68ce34382dac">
 
-`https://github.com/login/oauth/authorize?client_id=528e421d4ac95a87b883&scope=&response_type=code&redirect_uri=https://localhost:7074/signin-github&state=CfDJ8L8UGyfUjDBErg6qYS34nXCpL9Pc9wE9AAGGU_sKu7MOrh-IGtQMsH6nw9stVoxz5QvwgDE75XeHR3OKTQbV1PgbAJSPhsFk5docLrGICnvu4WuEe3GOoaRGFmveBBJTp7mty5-IvG58cVS_l5fg1RtfIJMc74jTL0NdMZWb67mUR6D_72iae_hGajnsA5-yAmfmeuVopdKgoKgMSLRWqcBCcbiJndJELPfn21MInqhVRf6ptsDxnlVj-ACapPwkQjSDvNelAkDxe-er5kbgEVFVvG-3m2CshC_FbJjVmFVR8XER-1jNsUD2buS6w28qFg`
+The state has redirect url and login provider we set earlier:
 
-At this point we raise event to redirect to authorization endpoint:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/4852f83e-af86-4983-97be-f79352ef52c0">
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/2dab6bfb-008f-495a-ae13-5626beccc876">
+The code is exchanged for the token here:
 
-The location is:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/51dc3939-bbd1-42e9-9c4f-14b5c0cff9ac">
 
-`https://github.com/login/oauth/authorize?client_id=528e421d4ac95a87b883&scope=&response_type=code&redirect_uri=https://localhost:7074/signin-github&state=CfDJ8L8UGyfUjDBErg6qYS34nXCpL9Pc9wE9AAGGU_sKu7MOrh-IGtQMsH6nw9stVoxz5QvwgDE75XeHR3OKTQbV1PgbAJSPhsFk5docLrGICnvu4WuEe3GOoaRGFmveBBJTp7mty5-IvG58cVS_l5fg1RtfIJMc74jTL0NdMZWb67mUR6D_72iae_hGajnsA5-yAmfmeuVopdKgoKgMSLRWqcBCcbiJndJELPfn21MInqhVRf6ptsDxnlVj-ACapPwkQjSDvNelAkDxe-er5kbgEVFVvG-3m2CshC_FbJjVmFVR8XER-1jNsUD2buS6w28qFg`
+Dummy identity is created:
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/2548df88-a5ea-4b44-8dc5-4148e487ff41">
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/3aa27088-72af-4dfd-9549-8c84b5115e72">
 
-### Calling `AuthorizationEndpoint` endpoint
-We're redirected to "authorize endpoint" from the first call.
+Towards the end of this method, a ticket is created:
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/ac3af5f0-bc25-4119-8d40-81137e93a278">
+<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9482726e-92c9-497f-ae8f-f3821a08e2c6">
 
-Auth server puts the code in the query string and sends a redirect:
+By calling this callback:
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/3e4d89db-7e01-40f4-93a1-a1e2a251a588">
+<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/d5a31a96-1eee-42b3-a171-cff98e00b9eb">
 
-### Calling `TokenEndpoint`
-And now we have a code:
+Now we're back in `RemoteAuthenticationHandler.cs`.
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/bd646f9e-8b7a-46dc-9f9e-88b0ccf1703f">
+Inside `HandleRequestAsync()`, we set which scheme produced this identity:
 
-We grab this in `OAuthHandler.cs`'s `HandleRemoteAuthenticateAsync` method:
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/ded03b88-3c8a-4ab2-bd51-268087cdfa26">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/2ee39b98-29a2-4021-b0d4-961d3ad85c2f">
+#### Call sign-in handler (Set "External" cookie)
+In `RemoteAuthenticationHandler.cs`
 
-State can be un-protected to view `AuthenticationProperties`:
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a7b6a17e-93c6-437e-8172-3cc725d8d117">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/48fe861e-24e9-4b5c-a416-64e2f056ce35">
+The `Principal` looks like this:
 
-#### Exchanging code for a token happens here in `OAuthHandler.cs`:
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/efdedcb0-6096-4fa7-a64b-1f2d06639284">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/bb770630-0068-40af-b4db-012f1cb73cd8">
+And the properties:
 
-The identity:
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a7bd09e9-05fb-45d0-98e4-103c85f26f2e">
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/aecf1c47-3330-4eb4-89f9-e9a59eb4870d">
+Now we're in `CookieAuthenticationHandler.cs`'s `HandleSignInAsync` method:
 
-### Calling `UserInformation` endpoint
-Create Ticket:
+<img width="800" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/53828fd4-b44a-41f8-93fd-8adba174305b">
 
-<img width="450" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/90801618-cfcf-4466-83ac-a4509b54efef">
+A new ticket is created:
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/1b72f629-f693-4416-8746-5243d05d0821">
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/62d52eda-c8be-4219-984a-b71f6faab16c">
 
-We have overridden this, so we end up here:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/abf50c5c-5ea2-4739-8e05-b798d41d05c6">
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/05377106-ade5-43e8-ad1f-e0ad7256de3a">
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/5ecc20bb-a5e3-464e-a676-578c37762deb">
 
-After the call, I get these 2 Claims:
+The method completes:
 
-<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/2a0e1618-fb33-4261-8b82-14afe1114efa">
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/799879be-724c-4365-b775-b967b1015f42">
 
-### Signing In the user with `Identity.External` scheme
-After the code exchange, we're directed:
+This method also completes:
 
-<img width="950" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/0d0139bd-723b-4b21-a969-8c840a76c940">
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/691d6e9b-8a80-42b8-9235-b92dffeba3a3">
 
-At this point, we already have `External` cookie set.
+Now we're back in `RemoteAuthenticationHandler.cs`'s `HandleRequestAsync()` method and about to get redirected to our original ReturnUri:
 
-This happens because I set it here:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/ce59159e-c32d-405f-990b-03612c9c5044">
 
-<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/059fb7ff-1e48-4d44-99c8-6723dfa4b8d6">
+Now we're redirected with the "External" cookie
 
-### Signing In the user with `Identity.Application` scheme
-Now I'm in `ExternalLogin.razor` to get Signed in:
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/3db98c10-d5d5-4837-b810-a9a389ae8c3a">
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/6c589021-f374-42fc-8eeb-c45ed7cded16">
+#### Run app-level post processing
+Now we're in `/Account/ExternalLogin` (In ExternalLogin.razor)
 
-Now I've got Application cookie as well:
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/b19591c8-47c0-4bae-aa83-31dad84c7e47">
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/ca5d7492-c3a4-4c1f-8e03-571f874cd6c0">
+We try to authenticate using "External" cookie to get external user info:
 
-Now I'm redirected to home page:
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9ff77a0c-e3e5-4ec8-8c4a-0f5e6e92295a">
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/a7988cb8-0790-4bca-b54d-61517a8cb48a">
+The method looks like this:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/6cefbb96-80cf-440e-b0d0-ccb497a72a76">
 
-Like so:
+Now we have userinfo:
 
-<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/16aebef7-2161-40a1-944b-d46d15898902">
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/e535c97e-68c2-40e7-b87c-c1cee4169963">
 
-Cookie is set:
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/44fce317-969a-4447-ad47-8efd62f17e99">
 
-<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/410820d9-2fea-4ded-9e28-1c10ed0e4c3a">
+`ProviderKey` is the Id in Github.
 
-Now the homepage looks pretty neat:
+Now we go into `OnLoginCallbackAsync()`:
 
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9fc58ba7-9fad-4ca2-9c38-89da1fb598e1">
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/3d043121-946d-44f6-aaa5-f70a9316faa6">
+
+Here:
+
+<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/f403c022-4976-46ec-a90b-0187b309a244">
+
+Now we get into `SignInManager.cs`:
+
+Looks like there's this neat method to get user by `loginProvider` (for eg: _github_) and `providerKey` (for eg: _30603497_).
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9503fe80-ab4a-4efa-843b-d0fc0cc0120f">
+
+Note 1:
+---
+
+Whenever `AuthenticateAsync()` method in `AuthenticationService.cs` runs AND `AuthenticateResult.Succeeded` is true, ClaimsTransformation is run.
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/4fe09ea7-7cfd-4a7a-ac8b-f4401b0ff828">
+
+Here:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/fcd8d092-a4a9-4721-8cbd-47e2fbe10dc0">
+
+Note 2:
+---
+The action in the query is this:
+
+<img width="1400" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/008bb985-d0a1-409a-b738-3fe277cc2fde">
+
+Also notice the user is not authenticated at this point because we haven't successfully authenticated with the default authentication scheme (Identity.Application).
+
+If for some reason, we're not able to get `externalLoginInfo`, an error message is passed through the cookie in the redirect to be shown in the UI.
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/45b207d1-ad0d-447c-a5aa-e3dd69495ec8">
+
+Like here:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/bec7b97d-53de-4a31-b4d8-bbfc44e812e4">
+
+The message comes from this component in the `Login.razor` page:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/ac86c4ae-2f00-4ede-8c8c-3fe59a01c38f">
+
+<img width="600" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/82cda3b4-1fc5-47b2-a308-acce45d1a7d1">
+
+#### Signout "External" cookie and Signin "Application" (primary) cookie
+We're still inside `SignInManager.cs`.
+
+Here we Signout external cookie:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/00031e8f-78b7-42ec-8fdf-4e98d21d4563">
+
+And Signin primary cookie:
+
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/4365d496-9cdd-44ea-a2a4-f32d41524a13">
+
+By calling this method:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/21eba0ce-135c-4d40-963b-9606f31b81b5">
+
+Looks like it adds provider name (github) as an additional claim.
+
+<img width="550" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/dbcc552c-2957-4f5f-a6e5-6873c6b6e412">
+
+Then call this method to sign in on primary cookie:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/8dcee766-d097-49f0-aac3-e95039dc14ff">
+
+Now we're back in `ExternalLogin.razor` by logging in the user successfully.
+
+#### Redirect to final url
+<img width="750" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/b73ea334-14d8-4b31-8558-41a7408216e9">
+
+We get to homepage now.
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9bdb9062-226e-4bc0-9d19-a92595277f75">
+
+Like this:
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/cc1483b7-ac6f-4bf0-bcab-8443825008fa">
+
+Now we hit `AuthenticationMiddleware` and try to authenticate the user. The `Identity.External` cookie is removed and `Identity.Application` cookie is present at this point.
+
+<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/01dd551f-657a-4b98-b62c-47e9c4d4dd91">
+
+<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/8c12158c-99c0-4f0d-a4ae-871f17846713">
+
+Success!
+
+<img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/661fd65a-2a37-4e3c-9947-9d5b2b07aea7">
 
 ## Add OAuth Authorization
 Add a new column in the database to store GitHub access tokens.
@@ -427,24 +538,4 @@ Scaffold a new migration and apply it to the database:
 dotnet ef migrations add AddGithubAccessTokenColumn
 dotnet ef database update
 ````
-
-`ValueKind = Object : "{"login":"affableashish","id":30603497,"node_id":"MDQ6VXNlcjMwNjAzNDk3","avatar_url":"https://avatars.githubusercontent.com/u/30603497?v=4","gravatar_id":"","url":"https://api.github.com/users/affableashish","html_url":"https://github.com/affableashish","followers_url":"https://api.github.com/users/affableashish/followers","following_url":"https://api.github.com/users/affableashish/following{/other_user}","gists_url":"https://api.github.com/users/affableashish/gists{/gist_id}","starred_url":"https://api.github.com/users/affableashish/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/affableashish/subscriptions","organizations_url":"https://api.github.com/users/affableashish/orgs","repos_url":"https://api.github.com/users/affableashish/repos","events_url":"https://api.github.com/users/affableashish/events{/privacy}","received_events_url":"https://api.github.com/users/affableashish/received_events","type":"User","site_admin":false,"name":"Ashish Khanal","company":null,"blog":"","location":"Columbus, OH","email":null,"hireable":true,"bio":"Love the joy of writing clean, maintainable code.","twitter_username":null,"public_repos":22,"public_gists":1,"followers":1,"following":7,"created_at":"2017-07-31T18:20:31Z","updated_at":"2023-10-01T01:53:24Z","private_gists":0,"total_private_repos":4,"owned_private_repos":4,"disk_usage":35460,"collaborators":0,"two_factor_authentication":false,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}"`
-AuthorizationHeaderProvider
-
-We get Access TOken in `HandleRemoteAuthenticateAsync` in `OUathHanlder.cs`, and use that to create a Ticket.
-Ticket is what gets into the cookie.
-
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/f826d690-a4c9-45f1-b99b-83719d4c3d5c">
-
-`.OnCreatingTicket` will populate claims:
-
-<img width="850" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/83c9c617-4323-41ad-9580-0881f2b89b26">
-
-
-Cookie gets created after `.OnCreatingTicket` completes.
-
-The request completes.
-
-
-
 
