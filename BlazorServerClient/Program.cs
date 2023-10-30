@@ -37,6 +37,7 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
             return Task.CompletedTask;
         };
     })
+    // This AUTHENTICATION handler will be triggered on the CALLBACK PATH.
     .AddOAuth("github", githubOptions =>
     {
         githubOptions.ClientId = builder.Configuration["Authentication:GitHub:ClientId"]!;
@@ -91,6 +92,8 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
             // Only useful if I was using this (OnCreatingTicket) for AuthZ where I was already authenticated with some other scheme.
             // This won't work here because I'm not signed in yet using "SomeSchemeIPreviouslySignedInWith"
             // var authResult = await context.HttpContext.AuthenticateAsync("SomeSchemeIPreviouslySignedInWith");
+            // var userClaims = authResult.Principal.Claims;
+            // var metaData = authResult.Properties.Items;
             
             // Store Access token of this user in the Db if you'd like:
             var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
