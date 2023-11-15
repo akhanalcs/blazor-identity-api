@@ -6,6 +6,8 @@ Navigate to Weather page and you can see the weather data being fetched from a s
 
 <img width="870" alt="image" src="https://github.com/affableashish/blazor-api-identity/assets/30603497/84982d65-7bfa-4d33-b749-3fcb03b3688f">
 
+Also check out [this sample](https://github.com/dotnet/blazor-samples/tree/main/8.0/BlazorWebAssemblyStandaloneWithIdentity) for an example of Blazor WASM with Identity. 
+
 ## How I created the projects
 ### BlazorServerClient project
 1. Installed ef tool
