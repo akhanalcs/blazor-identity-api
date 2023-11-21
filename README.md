@@ -528,14 +528,3 @@ Success!
 
 <img width="900" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/661fd65a-2a37-4e3c-9947-9d5b2b07aea7">
 
-## Add OAuth Authorization
-Add a new column in the database to store GitHub access tokens.
-
-<img width="650" alt="image" src="https://github.com/affableashish/blazor-identity-api/assets/30603497/9d698e76-b1ec-4b90-a0a6-afa70d0f2aa1">
-
-Scaffold a new migration and apply it to the database:
-````
-dotnet ef migrations add AddGithubAccessTokenColumn
-dotnet ef database update
-````
-
