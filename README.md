@@ -6,6 +6,11 @@ Navigate to Weather page and you can see the weather data being fetched from a s
 
 <img width="870" alt="image" src="https://github.com/akhanalcs/blazor-identity-api/assets/30603497/84982d65-7bfa-4d33-b749-3fcb03b3688f">
 
+## Helpful links
+1. [Choosing an Identity Solution: Identity vs OIDC](https://learn.microsoft.com/en-us/aspnet/core/security/how-to-choose-identity-solution?view=aspnetcore-8.0#identity-vs-oidc-server) (Read it!)
+2. [Blazor OIDC with Aspire Example](https://github.com/dotnet/blazor-samples/tree/main/8.0/BlazorWebAppOidc)
+3. [ASP.NET Core Identity system is designed to authenticate a single web application](https://github.com/dotnet/aspnetcore/issues/52800#issuecomment-1856750779)
+
 ## How I created the projects
 ### BlazorServerClient project
 1. Installed ef tool
